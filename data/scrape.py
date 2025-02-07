@@ -1,36 +1,29 @@
 import requests
 import bs4
 
-url1 = "/quote_title_resp.php?TName=Allan%20Quatermain"
-url2 = "/quote_title_resp.php?TName=Dune"
+url1 = "https://www.litquotes.com/quote_title_resp.php?TName=Allan%20Quatermain"
+url2 = "https://www.litquotes.com/quote_title_resp.php?TName=Dune"
 
 def soupify_page(url):
-    base = "https://www.litquotes.com"
-    r = requests.get(base + url)
+    r = requests.get(url)
+
+    r.raise_for_status()
+
     return bs4.BeautifulSoup(r.content, "html.parser")
 
-def get_container(url):
-    soup = soupify_page(url)
+def scrape_quotes(page_url):
+    soup = soupify_page(page_url)
 
-    # style selector, there isn't a more precise direct alternative
-    selector = "div[style=\"" \
-        "margin: 30px 20px 0px 20px; " \
-        "font-size: 110%;\"]"
-
-    # list of quotes
-    return soup.css.select_one(selector)
-
-
-def get_quotes(url):
-    container = get_container(url)
-
-    # all tags within quote list, including unneeded links etc.
-    tags = list(container.children)
+    d = soup.find(
+        "div",
+        style="margin: 30px 20px 0px 20px; " \
+            "font-size: 110%;"
+    )
 
     # group tags by quote
     groups = [
-        tags[i:i + 6]
-        for i in range(0, len(tags), 6)
+        d.contents[i:i + 6]
+        for i in range(0, len(d.contents), 6)
     ]
 
     # ensure compliance with quote group format
@@ -53,28 +46,56 @@ def get_quotes(url):
 
     return quotes
 
-# print(get_quotes(url))
+def get_page_urls(section_url):
+    soup = soupify_page(section_url)
 
-def get_indices(url):
-    container = get_container(url)
-
-    tags = list(container.children)
+    d = soup.find(
+        "div",
+        style="margin: 30px 20px 0px 20px; " \
+            "font-size: 110%;"
+    )
 
     # return if there's no navigation for more pages
-    if tags[-4].name != "div":
-        return [url]
+    if d.contents[-4].name != "div":
+        return [section_url]
     
-    pagination = tags[-4]
+    pagination = d.contents[-4]
 
     links = pagination.find_all("a")
 
     hrefs = [
-        l["href"]
+        "https://litquotes.com" + l["href"]
         for l in links
         if l.string != "Next>>"
     ]
     
-    return [url, *hrefs]
+    return [section_url, *hrefs]
     
+def get_section_urls(segment_url):
+    soup = soupify_page(segment_url)
 
-# print(get_quotes(url2))
+    # parent table of section list
+    t = soup.find(
+        "table",
+        border="0",
+        cellspacing="0",
+        cellpadding="0",
+        style="border-collapse: collapse; " \
+            "margin-left: 40px; " \
+            "width: 90%;",
+        align="left"
+    )
+
+    return [a["href"] for a in t.find_all("a")]
+
+def get_segment_urls(category_url):
+    soup = soupify_page(category_url)
+
+    # parent div of segment list
+    d = soup.find(
+        "div",
+        style="margin: 10px 0 10px 0;"
+    )
+
+    # extract segment links
+    return [a["href"] for a in d.find_all("a")]
