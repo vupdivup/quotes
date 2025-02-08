@@ -1,15 +1,19 @@
 import requests
 import bs4
+import json
 
-url1 = "https://www.litquotes.com/quote_title_resp.php?TName=Allan%20Quatermain"
-url2 = "https://www.litquotes.com/quote_title_resp.php?TName=Dune"
+base_url = "https://www.litquotes.com/"
 
 def soupify_page(url):
     r = requests.get(url)
 
     r.raise_for_status()
 
-    return bs4.BeautifulSoup(r.content, "html.parser")
+    # lxml is preferred, as it parses unorganized html better here
+    return bs4.BeautifulSoup(r.text, "lxml")
+
+def get_rel_url(url):
+    return url.replace(base_url, "")
 
 def scrape_quotes(page_url):
     soup = soupify_page(page_url)
@@ -49,13 +53,14 @@ def scrape_quotes(page_url):
 def get_page_urls(section_url):
     soup = soupify_page(section_url)
 
+    # find main container
     d = soup.find(
         "div",
         style="margin: 30px 20px 0px 20px; " \
             "font-size: 110%;"
     )
 
-    # return if there's no navigation for more pages
+    # return if there's no page navigation
     if d.contents[-4].name != "div":
         return [section_url]
     
@@ -66,6 +71,7 @@ def get_page_urls(section_url):
     hrefs = [
         "https://litquotes.com" + l["href"]
         for l in links
+        # exclude the next link, as it's a duplicate of another one
         if l.string != "Next>>"
     ]
     
@@ -99,3 +105,26 @@ def get_segment_urls(category_url):
 
     # extract segment links
     return [a["href"] for a in d.find_all("a")]
+
+def main():
+    quotes = []
+
+    # mine down in hierarchy
+    for segment_url in get_segment_urls(base_url + "quote_title.php"):
+        print(f"SEGMENT {get_rel_url(segment_url)}")
+
+        for section_url in get_section_urls(segment_url):
+            print(f"SECTION {get_rel_url(section_url)}")
+
+            for page_url in get_page_urls(section_url):
+                print(f"PAGE {get_rel_url(page_url)}")
+
+                # scrape quotes
+                quotes.extend(scrape_quotes(page_url))
+
+    # write to file
+    with open("quotes.json", "w") as f:
+        json.dump(quotes, f, indent=4)
+
+if (__name__ == "__main__"):
+    main()
