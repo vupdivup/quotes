@@ -1,5 +1,6 @@
 import requests
 import bs4
+import os
 import json
 
 base_url = "https://www.litquotes.com/"
@@ -122,8 +123,11 @@ def main():
                 # scrape quotes
                 quotes.extend(scrape_quotes(page_url))
 
+    # create raw dir if non-existent
+    os.makedirs("raw", exist_ok=True)
+
     # write to file
-    with open("quotes.json", "w") as f:
+    with open("raw/quotes.json", "w") as f:
         json.dump(quotes, f, indent=4)
 
 if (__name__ == "__main__"):

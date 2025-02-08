@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-df = pd.read_json("data/quotes.json")
+df = pd.read_json("raw/quotes.json")
 
 df.quote = df.quote.apply(
     # the split and rejoin removes any extra whitespace
