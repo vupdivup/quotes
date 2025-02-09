@@ -1,0 +1,39 @@
+@font-face {
+    font-family: Inter;
+    src: url("assets/fonts/Inter/Inter.ttf");
+}
+
+.cover {
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    height: 360px;
+    padding: 16px;
+    box-shadow: 0 0 2px black;
+}
+
+.cover-art {
+    aspect-ratio: 1 / 1.2;
+    margin-bottom: 8px;
+    background-color: lightseagreen;
+    fill: firebrick
+}
+
+.cover-title, .cover-author {
+    font-family: Inter;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.cover-title {
+    font-size: 20px;
+    font-weight: 500;
+    border-top: 2px solid gray;
+    padding-top: 8px;
+}
+
+.cover-author {
+    font-size: 16px;
+    font-weight: 400;
+}

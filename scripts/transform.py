@@ -14,6 +14,9 @@ df = df[
     (df.quote.str.len() < 250)
 ]
 
+# TODO: replace hyphens
+# TODO: filter out untypable chars
+
 dest = input("Destination: ")
 
 os.makedirs(os.path.dirname(dest), exist_ok=True)

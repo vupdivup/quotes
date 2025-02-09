@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+    <defs>
+        <symbol id="one">
+            <path d="
+                M 10 10
+                L 50 10
+                A 40 40 0 0 1 10 50
+                Z
+            " />
+            <path d="
+                M 90 60
+                A 40 40 0 0 0 50 100
+                L 90 100
+                Z
+            " />
+        </symbol>
+    </defs>
+    <use href="#0" />
+</svg>
